@@ -1,5 +1,5 @@
 include ../makefile
-PROGS = p1_1 p1_2 p1_3 p1_4 p1_5 p1_6
+PROGS = p1_1 p1_2 p1_3 p1_4 p1_5 p1_6 p1_7 p1_8
 OBJS =  p1_1.o p1_2.o p1_3.o p1_4.o
 OBJS_DIR = ../obj/
 BIN_DIR = ../bin/
@@ -47,3 +47,15 @@ p1_6.o: p1_6.c
 
 p1_6: p1_6.o ${OBJS_DIR}error.o
 	${LINK.c} -o ${BIN_DIR}$@ ${OBJS_DIR}/p1_6.o ${OBJS_DIR}/error.o
+
+p1_7.o: p1_7.c
+	${COMPILE.c} -o ${OBJS_DIR}$@ p1_7.c ${INCLUDE}
+
+p1_7: p1_7.o ${OBJS_DIR}error.o
+	${LINK.c} -o ${BIN_DIR}$@ ${OBJS_DIR}/p1_7.o ${OBJS_DIR}/error.o
+
+p1_8.o: p1_8.c
+	${COMPILE.c} -o ${OBJS_DIR}$@ p1_8.c ${INCLUDE}
+
+p1_8: p1_8.o ${OBJS_DIR}error.o
+	${LINK.c} -o ${BIN_DIR}$@ ${OBJS_DIR}/p1_8.o ${OBJS_DIR}/error.o
