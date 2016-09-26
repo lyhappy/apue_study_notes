@@ -21,6 +21,7 @@ int main(void) {
 		if ((pid = fork()) < 0) {
 			err_sys("fork error");
 		} else if (pid == 0) { /* child */
+			printf("child pid: %d\n", getpid());
 			execlp(cmd_buf, cmd_buf, (char *) 0);
 			err_quit("could not execute: %s\n", cmd_buf);
 			return 127;
