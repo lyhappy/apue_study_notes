@@ -15,4 +15,7 @@ p2_2: p2_2.o error.o
 
 p2_2.o: p2_2.c
 	${COMPILE.c} -o ${DIR_OBJS}$@ $< ${INCLUDE}
+	
+p2_2.c: p2_1.awk
+	awk -f p2_1.awk > $@
 
