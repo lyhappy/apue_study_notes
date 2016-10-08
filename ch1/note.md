@@ -10,11 +10,13 @@ CH1 UNIX基础知识
 	* 任何一个函数都不会将errno设置为0
 
 3. strerror: 返回一个字符串指针，指向解释errno的字符串。
-``` c
+
+	``` c
 	char * strerror(int errnum);
-```
+	```
 
 4. perror: 基于errno产生一条出错消息。[p1_6](p1_6.c)
-```c
+
+	```c
 	void perror(const char *msg);
-```
+	```
