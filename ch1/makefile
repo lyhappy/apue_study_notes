@@ -1,61 +1,30 @@
-include ../makefile
-PROGS = p1_1 p1_2 p1_3 p1_4 p1_5 p1_6 p1_7 p1_8
-OBJS =  p1_1.o p1_2.o p1_3.o p1_4.o
-OBJS_DIR = ../obj/
-BIN_DIR = ../bin/
-INCLUDE = -I ../include/
+DIR_OBJS = ../obj
+DIR_BINS = ../bin
 
+PROGS = ${DIR_BINS}/p1_1 	\
+		${DIR_BINS}/p1_2 	\
+		${DIR_BINS}/p1_3 	\
+		${DIR_BINS}/p1_4 	\
+		${DIR_BINS}/p1_5 	\
+		${DIR_BINS}/p1_6 	\
+		${DIR_BINS}/p1_7 	\
+		${DIR_BINS}/p1_8
+SRCS=$(wildcard *.c)
+OBJS=$(patsubst %.c,$(DIR_OBJS)/%.o,$(SRCS))
+
+INCLUDE = -I ../include/
+COMPILE.c += ${INCLUDE}
+
+vpath %.c .:../lib
+vpath %.h ../include
+vpath %.o ../obj
 
 all: ${PROGS}
-
-error.o: ../lib/error.c
-	make ../lib/makefile
-
-p1_1: p1_1.o ${OBJS_DIR}error.o 
-	${LINK.c} -o ${BIN_DIR}$@ ${OBJS_DIR}/p1_1.o ${OBJS_DIR}/error.o
-
-p1_1.o: p1_1.c 
-	${COMPILE.c} -o ${OBJS_DIR}$@ p1_1.c ${INCLUDE}
-
-p1_2: p1_2.o ${OBJS_DIR}error.o
-	${LINK.c} -o ${BIN_DIR}$@ ${OBJS_DIR}/p1_2.o ${OBJS_DIR}/error.o
-
-p1_2.o: p1_2.c
-	${COMPILE.c} -o ${OBJS_DIR}$@ p1_2.c ${INCLUDE}
-
-#${OBJS}: ch1/*.c include/apue.h
-p1_3.o: p1_3.c
-	${COMPILE.c} -o ${OBJS_DIR}$@ p1_3.c ${INCLUDE}
 	
-p1_3: p1_3.o ${OBJS_DIR}error.o
-	${LINK.c} -o ${BIN_DIR}$@ ${OBJS_DIR}/p1_3.o ${OBJS_DIR}/error.o
+${DIR_OBJS}/%.o: %.c
+	${COMPILE.c} -o $@ $<
 
-p1_4.o: p1_4.c
-	${COMPILE.c} -o ${OBJS_DIR}$@ p1_4.c ${INCLUDE}
+${DIR_BINS}/%: ${DIR_OBJS}/%.o error.o
+	${LINK.c} -o $@ $^
 
-p1_4: p1_4.o ${OBJS_DIR}error.o
-	${LINK.c} -o ${BIN_DIR}$@ ${OBJS_DIR}/p1_4.o ${OBJS_DIR}/error.o
-	
-p1_5.o: p1_5.c
-	${COMPILE.c} -o ${OBJS_DIR}$@ p1_5.c ${INCLUDE}
-
-p1_5: p1_5.o ${OBJS_DIR}error.o
-	${LINK.c} -o ${BIN_DIR}$@ ${OBJS_DIR}/p1_5.o ${OBJS_DIR}/error.o
-
-p1_6.o: p1_6.c
-	${COMPILE.c} -o ${OBJS_DIR}$@ p1_6.c ${INCLUDE}
-
-p1_6: p1_6.o ${OBJS_DIR}error.o
-	${LINK.c} -o ${BIN_DIR}$@ ${OBJS_DIR}/p1_6.o ${OBJS_DIR}/error.o
-
-p1_7.o: p1_7.c
-	${COMPILE.c} -o ${OBJS_DIR}$@ p1_7.c ${INCLUDE}
-
-p1_7: p1_7.o ${OBJS_DIR}error.o
-	${LINK.c} -o ${BIN_DIR}$@ ${OBJS_DIR}/p1_7.o ${OBJS_DIR}/error.o
-
-p1_8.o: p1_8.c
-	${COMPILE.c} -o ${OBJS_DIR}$@ p1_8.c ${INCLUDE}
-
-p1_8: p1_8.o ${OBJS_DIR}error.o
-	${LINK.c} -o ${BIN_DIR}$@ ${OBJS_DIR}/p1_8.o ${OBJS_DIR}/error.o
+include ../makefile
