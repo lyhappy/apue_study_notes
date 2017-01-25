@@ -12,4 +12,7 @@ void err_quit(const char* fmt, ...);
 void err_sys(const char* fmt, ...);
 
 
+#define	FILE_MODE	(S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)
+					/* default file access permissions for new files */
+
 #endif /* APUE_H_H_ */
