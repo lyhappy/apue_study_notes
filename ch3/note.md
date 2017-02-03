@@ -81,5 +81,76 @@ CH3 文件I/O
 	```
 	若成功，返回实际写入的字节数，失败返回-1，通常失败的原因是磁盘已写满或超过给定进程的最大文件限制。
 
+8. 原子操作
+	1. 在文件末尾添加内容：
+		如果没有以O_APPEND选项打开一个文件，那么要在文件末尾添加内容需要分两步，先用lseek定位的文件末尾，再用write写文件。
+		所以O_APPEND选项保证的追加方式写文件的操作是原子性的。在打开文件时，设置O_APPEND标志，内核在每次写操作时，会自动将当前偏移量设置到文件末尾，这样在每次写之前不需要再调用lseek
+	2. pread和pwrite：
+	XSI扩展允许原子性的定位和读写I/O:
+	```c
+	#include <unistd.h>
+	ssize_t pread(int filedes, void *buf, size_t nbytes, off_t offset);
+	ssize_t pwrite(int filedes, const void *buf, size_t nbytes, off_t offset);
+	```
+	3. 创建一个文件：
+	open函数的O_CREAT和O_EXCL选项保证了创建文件的原子性。如果没有这一原子性保障，一般可能使用open与creat的组合：
+	```c
+	if ((fd = open(pathname, O_WRONLY)) < 0) {
+		if (errno == ENOENT) {
+			if ((fd = creat(pathname, mode)) < 0)
+				err_sys("creat error");
+		} else {
+			err_sys("open error");
+		}
+	}
+	```
+
+9. dup和dup2函数
+	```c
+	#include <unistd.h>
+	int dup(int filedes);
+	int dup2(int filedes, int filedes2);
+	```
+	作用：复制一个现存的文件描述符
+	dup返回的新的文件描述符一定是当前可用文件描述符的最小数值, dup2可以用第二个参数指定新描述符的数值，如果filedes2所指的描述符已被占用，则先关闭其所指的文件，如果filedes等于filedes2，则直接返回filedes2，不关闭
+	
+10. sync, fsync, fdatasync
+	UNIX内核利用缓存机制合并多次写磁盘以提升I/O效率，实际中，为了保证磁盘文件和缓冲区一致，UNIX系统提供了以下三个函数用于刷新缓存：
+	```c
+	#include <unistd.h>
+	int fsync(int filedes);
+	int fdatasync(int filedes);
+	void sync(void);
+	```
+	sync函数会刷新所有修改过的块缓冲区，不等待写操作结束。通常系统的守护进程（update）会周期性（一般是30秒）的调用该函数。
+	fsync函数用于刷新指定文件的缓冲区, 并且等待写操作的结束。
+	fdatasync函数类似于fsync，但只影向文件的数据部分，不更新文件的属性。
+
+11. fcntl
+	```c
+	#include <fcntl.h>
+	int fcntl(int filedes, int cmd, ... /* int arg */);
+	```
+	改变已打开文件的性质
+	fcntl依据cmd的取值有五种功能：
+	* F_DUPFD 复制一个现有的文件描述符
+	* F_GETFD, F_SETFD 获得/设置文件描述符标记
+	* F_GETFL, F_SETFL 获得/设置文件状态标志
+	* F_GETOWN, F_SETOWN 获得/设置异步I/O所有权
+	* F_GETLK, F_SETLK, F_SETLKW 获得/设置记录锁
+
+12. ioctl
+	```c
+	#include <unistd.h>
+	#include <sys/ioctl.h>
+	#include <stropts.h>
+
+	int ioctl(int filedes, int request, ...);
+	```
+	ioctl是I/O操作的杂物箱
+
+
+
+
 	
 
