@@ -20,6 +20,14 @@ void err_quit(const char* fmt, ...) {
 	exit(1);
 }
 
+void err_ret(const char* fmt, ...) {
+	va_list args;
+	va_start(args, fmt);
+	do_error(NONE_SYS_CALL, fmt, args);
+	va_end(args);
+
+}
+
 void err_sys(const char* fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
