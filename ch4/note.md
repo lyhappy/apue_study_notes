@@ -120,4 +120,53 @@ chmod 命令可用于修改文件的访问权限。
 
 内核对文件访问权限的测试：
 
+1. 若进程的有效用户ID为0，即具有**超级用户**权限，则允许访问。
+2. 若进程的有效用户ID等于文件所有者ID，如果所有者对应的访问权限位被设置，则允许访问，否则拒绝访问。
+3. 若进程的有效组ID或附加组ID等于文件的组ID，则如果组对应的访问权限位被设置，则允许访问，否则拒绝访问。
+4. 若其他用户的访问权限位被设置，则允许访问，否则拒绝访问。
+
+以上第二步和第三步发生拒绝时，不再继续后续判断步骤。
+
+## 新文件和目录的所有权
+
+open 和 create 函数可以创建文件, mkdir 函数可以创建目录。新建文件和新建目录的所有权规则是一致的。
+
+文件的所有者ID是创建文件的进程的有效用户ID。
+文件的组ID可以是创建文件的进程的有效组ID，也可以是文件所在目录的组ID。
+
+> **FreeBSD 8.0** and **Mac OS X 10.6.8** always copy the new file’s group ID from the directory.
+> **Several Linux** file systems allow the choice between the two options to be selected using a **mount(1)** command option. 
+> The default behavior for **Linux 3.2.0** and **Solaris 10** is to determine the group ID of a new file depending on whether the *set-group-ID bit* is set for the directory in which the file is created. If this bit is set, the new file’s group ID is copied from the directory; otherwise, the new file’s group ID is set to the effective group ID of the process.
+
+## access & faccessat
+
+打开一个文件时，系统内核会检查有效用户ID和有效组ID对文件的访问权限。有时，进程需要检查实际用户ID和实际组ID代表的用户对文件的访问权限。当进程文件的嗯SUID标记被设置后，执行进程的用户与进程运行时的有效用户会不一致，进程需要检查执行进程的用户对某文件的访问权限时，即是这种场景。
+
+```c
+#include <unistd.h>
+int access(const char *pathname, int mode);
+int faccessat(int fd, const char *pathname, int mode, int flag);	
+		//  Both return: 0 if OK, −1 on error
+```
+
+参数mode为F_OK时，用于检查文件是否存在；为R_OK, W_OK, X_OK的组合时，检查具体权限。
+当pathname为绝对路劲时，或fd为AT_FDCWD, pathname为相对路径时，faccessat 和 access 相同。
+当flag参数传入为AT_EACCESS时，faccessat 检查的是有效用户ID和组ID对文件的访问权限。
+
+## umask
+
+```c
+#include <sys/stat.h> 
+mode_t umask(mode_t cmask);
+		//	Returns: previous file mode creation mask
+```
+
+umask 用来设置进程创建文件和目录时mode的默认值。
+
+
+
+
+
+
+
 
