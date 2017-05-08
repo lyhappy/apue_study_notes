@@ -1,5 +1,10 @@
-CH4 文件和目录
-===
+---
+layout: post
+title: CH4 文件和目录
+categories: APUE学习笔记
+date: 2017-05-08
+---
+
 
 ## stat、fstat and lstat
 
@@ -134,9 +139,9 @@ open 和 create 函数可以创建文件, mkdir 函数可以创建目录。新�
 文件的所有者ID是创建文件的进程的有效用户ID。
 文件的组ID可以是创建文件的进程的有效组ID，也可以是文件所在目录的组ID。
 
-> **FreeBSD 8.0** and **Mac OS X 10.6.8** always copy the new file’s group ID from the directory.
-> **Several Linux** file systems allow the choice between the two options to be selected using a **mount(1)** command option. 
-> The default behavior for **Linux 3.2.0** and **Solaris 10** is to determine the group ID of a new file depending on whether the *set-group-ID bit* is set for the directory in which the file is created. If this bit is set, the new file’s group ID is copied from the directory; otherwise, the new file’s group ID is set to the effective group ID of the process.
+> <p>**FreeBSD 8.0** and **Mac OS X 10.6.8** always copy the new file’s group ID from the directory. </p>
+> <p>**Several Linux** file systems allow the choice between the two options to be selected using a **mount(1)** command option. </p>
+> <p>The default behavior for **Linux 3.2.0** and **Solaris 10** is to determine the group ID of a new file depending on whether the *set-group-ID bit* is set for the directory in which the file is created. If this bit is set, the new file’s group ID is copied from the directory; otherwise, the new file’s group ID is set to the effective group ID of the process.</p>
 
 ## access & faccessat
 
@@ -161,10 +166,132 @@ mode_t umask(mode_t cmask);
 		//	Returns: previous file mode creation mask
 ```
 
-umask 用来设置进程创建文件和目录时mode的默认值。
+umask 文件模式创建屏蔽字，用来在创建文件时，屏蔽指定的访问权限位。
+可设置的值可取如下值的组合：
 
+| Mask bit | Meaning |
+| --- | --- |
+| 0400 | prevent user from reading your files |
+| 0200 | prevent user from writing your files |
+| 0100 | prevent user from executing your files |
+| 0040 | prevent group members from reading your files |
+| 0020 | prevent group members from writing your files |
+| 0010 | prevent group members from executing your files |
+| 0004 | prevent others from reading your files |
+| 0002 | prevent others from writing your files |
+| 0001 | prevent others from executing your files |
 
+> eg. Some common umask values are 002 to prevent others from writing your files, 022 to prevent group members and others from writing your files, and 027 to prevent group members from writing your files and others from reading, writing, or executing your files.
 
+进程内设置mask值时，不会影响其父进程的mask值。
+
+## chmod, fchmod, fchmodat
+
+```c
+#include <sys/stat.h>
+int chmod(const char *pathname, mode_t mode);
+int fchmod(int fd, mode_t mode);
+int fchmodat(int fd, const char *pathname, mode_t mode, int flag);
+		// All three return: 0 if OK, −1 on error
+```
+
+修改文件的访问权限，进程的有效用户ID必须和文件的所有者ID一致或者进程具有超级用户权限。
+
+对于fchmodat函数，pathname可以是绝对路径，可以是相对于fd的相对路径，flag值为AT_SYMLINK_NOFOLLOW时，不会影响被链接的文件。
+
+mode | Description
+--- | ---
+S_ISUID | set-user-ID on execution
+S_ISGID | set-group-ID on execution
+S_ISVTX | saved-text (sticky bit)
+S_IRWXU | read, write, and execute by user (owner) 
+   S_IRUSR | read by user (owner)
+   S_IWUSR | write by user (owner)
+   S_IXUSR | execute by user (owner)
+S_IRWXG | read, write, and execute by group 
+   S_IRGRP | read by group
+   S_IWGRP | write by group
+   S_IXGRP | execute by group
+S_IRWXO | read, write, and execute by other (world) 
+   S_IROTH | read by other (world)
+   S_IWOTH | write by other (world)
+   S_IXOTH | execute by other (world)
+
+* 没有超级权限时，对黏住位(S_ISVTX)的设置会被自动关闭。
+* 新文件的组ID不等于进程有效组ID和附加组ID中的一个，且进程不具有超级权限时，设置组ID位将会被自动关闭。
+
+## 黏住位
+
+在UNIX系统未使用分页技术时，使用黏住位(S_ISVTX)，可以在进程执行结束后，将可执行文件的副本保存在交换区，方便下载执行该进程时能迅速载入内存。
+交换区占用连续磁盘空间，且其中的可执行文件副本也是连续存放，所以比普通磁盘文件加载速度要快些。
+滥用黏住位可能会导致交换区别大量占用。
+目前的UNIX系统都配置有虚拟内存系统和快速文件系统，黏住位技术已经淘汰。
+
+现在的系统改变了黏住位的功能。Single UNIX Specification 允许的对目录设置黏住位，若如此，只有对该目录具有写权限的用户满足以下条件之一的，才能删除或更名目录下的文件：
+	* 拥有此文件
+	* 拥有此目录
+	* 是超级用户
+
+## chown,  fchown, fchownat, lchown
+
+```c
+#include <unistd.h>
+int chown(const char *pathname, uid_t owner, gid_t group);
+int fchown(int fd, uid_t owner, gid_t group);
+int fchownat(int fd, const char *pathname, uid_t owner, gid_t group, int flag);
+int lchown(const char *pathname, uid_t owner, gid_t group);
+		// All four return: 0 if OK, −1 on error
+```
+
+修改文件的userid和groupid, owner和group参数传入-1时，表示不修改当前值。
+对于链接文件，lchown和fchownat(在flag为AT_SYMLINK_NOFOLLOW时)，只作用于链接文件本身，不影响链接所指文件。
+
+## 文件大小
+
+stat 结构中的 st_size 字段表示以字节为单位的文件长度。
+普通文件长度可以未0。
+目录文件通常是一个数（16或512）的倍数。
+符号链接，文件长度是文件名的实际字节数。
+
+## 文件截断
+
+```c
+#include <unistd.h>
+int truncate(const char *pathname, off_t length); 
+int ftruncate(int fd, off_t length);
+		// Both return: 0 if OK, −1 on error
+```
+
+> <p>These two functions truncate an existing file to length bytes. </p>
+> <p>If the previous size of the file was greater than length, the data beyond length is no longer accessible. </p>
+> <p>Otherwise, if the previous size was less than length, the file size will increase and the data between the old end of file and the new end of file will read as 0 </p>
+
+## 文件系统
+
+![](images/filesystem.png)
+
+* 一块硬盘(disk)可以分为多个**分区**(partition)
+* 每个分区可以包含一个文件系统(file system)
+* 文件系统由**自举块**(boot block)，**超级块**(super block)和若干个**柱面组**(cylinder group)组成
+* 一个柱面组由**超级块副本**(super block copy)，**配置信息**(cg info)，**i节点图**(i-node map)，**块位图**(block bitmap)，若干个**i节点块**(i-nodes)和数据块(data blocks)组成
+
+![](images/i-nodes_and_data_blocks.png)
+
+* 图中两个目录项(directory entry)指向同一个i-node节点，每个i-node节点都一个计数器，记录指向其的目录项数目。
+* 当i-node上的计数器变为0时，文件内容才会真正被删除(释放数据块)。
+* 这就是为何"unlinking a file"通常并不意味着删除与文件关联的数据块的原因。
+* 这也是为何移除目录项被称为unlink而不是delete的原因。
+* i-node节点的引用计数器在stat结构中，由st_nlink记录。
+* 这种链接方式称为硬链接(hard links)。
+* 在符号链接(symbolic links)中，并不公用i-node和data blocks，链接文件的data blocks中记录的被链接文件的路径。
+* i-node节点包含关于文件的有信息: 文件类型，访问权限控制位，文件大小，数据块的地址等待。
+* 目录项中的i-node编号只能指向同一个文件系统中的i-node，所以`ln`命令不能创建跨文件系统的链接。
+* `mv`命令本质上是创建了一个新的目录项并关联在旧的i-node节点上，同时unlink旧的目录项。
+
+![](images/link_count_field_for_a_directory.png)
+
+* 不含有子目录的目录项，其i-node节点的计数器总是2(被自身和父目录引用）
+* 含有子目录的目录项，其i-node节点的计数器器至少为3（2 + 子目录数）
 
 
 

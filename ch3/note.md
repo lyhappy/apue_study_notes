@@ -1,5 +1,10 @@
-CH3 文件I/O
-===
+---
+layout: post
+title: CH3 文件I/O
+categories: APUE学习笔记
+date: 2017-05-07
+---
+
 
 0. 五个基本的I/O函数
 	open, create, read, write, close

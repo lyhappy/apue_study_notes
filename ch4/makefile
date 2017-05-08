@@ -3,7 +3,8 @@ DIR_BINS = ../bin
 
 PROGS = ${DIR_BINS}/p4_1 	\
 		${DIR_BINS}/p4_2	\
-		${DIR_BINS}/p4_3
+		${DIR_BINS}/p4_3	\
+		${DIR_BINS}/p4_4
 
 
 SRCS=$(wildcard *.c)
