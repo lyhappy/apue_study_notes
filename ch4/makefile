@@ -4,7 +4,13 @@ DIR_BINS = ../bin
 PROGS = ${DIR_BINS}/p4_1 	\
 		${DIR_BINS}/p4_2	\
 		${DIR_BINS}/p4_3	\
-		${DIR_BINS}/p4_4
+		${DIR_BINS}/p4_4	\
+		${DIR_BINS}/p4_5	\
+		${DIR_BINS}/p4_5_1	\
+		${DIR_BINS}/p4_6	\
+		${DIR_BINS}/p4_7	\
+		${DIR_BINS}/p4_8	\
+		${DIR_BINS}/p4_9	
 
 
 SRCS=$(wildcard *.c)
@@ -22,7 +28,7 @@ all: ${PROGS}
 ${DIR_OBJS}/%.o: %.c
 	${COMPILE.c} -o $@ $<
 
-${DIR_BINS}/%: ${DIR_OBJS}/%.o error.o
+${DIR_BINS}/%: ${DIR_OBJS}/%.o error.o	pathalloc.o 
 	${LINK.c} -o $@ $^
 
 include ../makefile

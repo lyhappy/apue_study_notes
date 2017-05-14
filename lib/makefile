@@ -1,10 +1,20 @@
-OBJS = ../obj/error.o
+DIR_OBJS = ../obj
+DIR_BINS = ../bin
+
+
+SRCS=$(wildcard *.c)
+OBJS=$(patsubst %.c,$(DIR_OBJS)/%.o,$(SRCS))
+
 INCLUDE = -I ../include
-OBJ_DIR = ../obj/
+COMPILE.c += ${INCLUDE}
+
+vpath %.c .:../lib
+vpath %.h ../include
+vpath %.o ../obj
 
 all: ${OBJS}
 
-../obj/error.o: error.c 
-	${COMPILE.c} -o $@ ${INCLUDE} $<
+${DIR_OBJS}/%.o: %.c
+	${COMPILE.c} -o $@ $<
 
 include ../makefile
