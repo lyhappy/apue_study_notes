@@ -10,7 +10,8 @@ PROGS = ${DIR_BINS}/p4_1 	\
 		${DIR_BINS}/p4_6	\
 		${DIR_BINS}/p4_7	\
 		${DIR_BINS}/p4_8	\
-		${DIR_BINS}/p4_9	
+		${DIR_BINS}/p4_9	\
+		${DIR_BINS}/p4_10	
 
 
 SRCS=$(wildcard *.c)

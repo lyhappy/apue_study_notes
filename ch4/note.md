@@ -539,6 +539,28 @@ char *getcwd(char *buf, size_t size);
 		//	Returns: buf if OK, NULL on error
 ```
 
+## 设备特殊文件
 
+stat 结构中的字段st_dev和st_rdev表示设备号，只有字符特殊文件和块特殊文件才有st_rdev的值。此值包含实际设备的设备号。
 
+## 文件访问权限位总结
 
+Constant | Description | Effect on regular file | Effect on directory
+--- | --- | --- | ---
+S_ISUID | set-user-ID |	set effective user ID on execution | (not used) 
+S_ISGID | set-group-ID | if group-execute set, then set effective group ID on execution; otherwise, enable mandatory record locking (if supported) | set group ID of new files created in directory to group ID of directory 
+S_ISVTX | sticky bit | control caching of file contents (if supported) | restrict removal and renaming of files in director| 
+S_IRUSR | user-read | user permission to read file | user permission to read directory entries 
+S_IWUSR | user-write | user permission to write file | user permission to remove and create files in directory 
+S_IXUSR | user-execute | user permission to execute file | user permission to search for given pathname in directory 
+S_IRGRP | group-read | group permission to read file | group permission to read directory entries 
+S_IWGRP | group-write | group permission to write file | group permission to remove and create files in directory 
+S_IXGRP | group-execute | group permission to execute file | group permission to search for given pathname in directory 
+S_IROTH | other-read | other permission to read file | other permission to read directory entries 
+S_IWOTH | other-write | other permission to write file | other permission to remove and create files in directory 
+S_IXOTH | other-execute | other permission to execute file | other permission to search for given pathname in directory 
+
+The final nine constants can also be grouped into threes, as follows:
+          S_IRWXU = S_IRUSR | S_IWUSR | S_IXUSR
+          S_IRWXG = S_IRGRP | S_IWGRP | S_IXGRP
+          S_IRWXO = S_IROTH | S_IWOTH | S_IXOTH
