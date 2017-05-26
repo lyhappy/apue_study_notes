@@ -199,9 +199,28 @@ puts函数虽然没有类似gets函数的安全问题，但也不建议使用了
 标准I/O的效率
 ---
 
+[p5_1.c](p5_1.c)
+[p5_2.c](p5_2.c)
+
+Function | User CPU (seconds) | System CPU (seconds) | Clock time (seconds) | Bytes of program text 
+--- | --- | --- | --- |---
+best time from Figure 3.6 | 0.05 | 0.29 | 3.18
+fgets, fputs | 2.27 | 0.30 | 3.49 | 143 
+getc, putc | 8.45 | 0.29 | 10.33 | 114 
+fgetc, fputc | 8.16 | 0.40 | 10.18 | 114
+single byte time from Figure 3.6 | 134.61 | 249.94 | 394.95
 
 Direct I/O
 ---
+
+```c
+#include <stdio.h>
+size_t fread(void *restrict ptr, size_t size, size_t nobj,
+		FILE *restrict fp);
+size_t fwrite(const void *restrict ptr, size_t size, size_t nobj,
+		FILE *restrict fp);
+		//	Both return: number of objects read or written
+```
 
 
 
