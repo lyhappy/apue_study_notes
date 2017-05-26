@@ -1,17 +1,7 @@
 DIR_OBJS = ../obj
 DIR_BINS = ../bin
 
-PROGS = ${DIR_BINS}/p4_1 	\
-		${DIR_BINS}/p4_2	\
-		${DIR_BINS}/p4_3	\
-		${DIR_BINS}/p4_4	\
-		${DIR_BINS}/p4_5	\
-		${DIR_BINS}/p4_5_1	\
-		${DIR_BINS}/p4_6	\
-		${DIR_BINS}/p4_7	\
-		${DIR_BINS}/p4_8	\
-		${DIR_BINS}/p4_9	\
-		${DIR_BINS}/p4_10	
+PROGS = ${DIR_BINS}/p5_1 	
 
 
 SRCS=$(wildcard *.c)
