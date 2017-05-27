@@ -6,6 +6,7 @@
 流和文件对象
 ---
 
+
 第三章中的所有I/O函数都是针对文件描述符的，标准I/O库是围绕文件流进行的。
 
 对于ASCII字符，一个字符编码为一个字节；对于国际字符，一个字符通常需要多个字节来编码表示。<br>
@@ -399,8 +400,60 @@ FILE *tmpfile(void);
 
 `tmpnam`生成一个与现有文件不重名且有效的路径字符串，每次调用产生的字符串不相同。最多可以调用TMP_MAX次，标准C规定至少25次，一般的实现远大于这个数。
 如果传入的参数ptr为NULL，则生成的文件名存储在一个静态数组，地址以返回值的形式给出，且后续的调用会覆盖静态数组中的值，所以需要及时取出其中的字符串。
+使用tmpname生成文件名，然后再创建文件，由于不是一个原子操作，所以会有同步的问题。
 
 `tmpfile`会生成一个临时文件，并在关闭文件或进程退出时自动删除。
 
+XSI 定义的额外两个函数
 
+```c
+#include <stdlib.h>
+char *mkdtemp(char *template);
+		//	Returns: pointer to directory name if OK, NULL on error 
+int mkstemp(char *template);
+		//	Returns: file descriptor if OK, −1 on error
+```
 
+The `mkdtemp` function creates a directory with a unique name.<br>
+The `mkstemp` function creates a regular file with a unique name.<br>
+This string is a pathname whose last six characters are set to XXXXXX.<br>
+
+mkdtemp 创建的文件夹，访问权限为：S_IRUSR | S_IWUSR | S_IXUSR	0700
+
+Memory Streams
+---
+
+```c
+#include <stdio.h>
+FILE *fmemopen(void *restrict buf, size_t size,
+const char *restrict type);
+		//	Returns: stream pointer if OK, NULL on error
+```
+
+将一段内存转换成流对象，以标准I/O的方式操作。
+
+whenever a memory stream is opened for append, the current file position is set to the first null byte in the buffer.<br>
+如果传入的参数buf为NULL，则fmemopen会自行分配一段内存空间，但调用者无法获取其地址，即如果type参数为只读或者只写，那么调用者是无法以直接访问内存的嗯方式写或者读取其内容。这样一般是没有意义的。<br>
+在流中写内容后，并调用`fclose`, `fflush`, `fseek`, `fseeko`, or `fsetpos` 会在流末尾写入null字符。
+
+* Of the four platforms covered in this book, only Linux 3.2.0 provides support for memory streams.
+
+```c
+#include <stdio.h>
+FILE *open_memstream(char **bufp, size_t *sizep); #include <wchar.h>
+FILE *open_wmemstream(wchar_t **bufp, size_t *sizep);
+		//	Both return: stream pointer if OK, NULL on error
+```
+
+These two functions differ from fmemopen in several ways:<br>
+* The stream created is only open for writing.<br>
+* We can’t specify our own buffer, but we can get access to the buffer’s address and size through the bufp and sizep arguments, respectively.<br>
+* We need to free the buffer ourselves after closing the stream.<br>
+* The buffer will grow as we add bytes to the stream.<br>
+
+bufp是二级指针，即随着对流的操作，缓冲区会自动增长。所以每次调用fflush或fclose后，缓冲区可能会重新分配，需关注bufp的值，其值可能为指向新的内存空间的指针。
+
+标准I/O的替代品
+---
+
+sfio, fio, ASI

@@ -4,7 +4,9 @@ DIR_BINS = ../bin
 PROGS = ${DIR_BINS}/p5_1 	\
 		${DIR_BINS}/p5_2	\
 		${DIR_BINS}/p5_3	\
-		${DIR_BINS}/p5_4
+		${DIR_BINS}/p5_4	\
+		${DIR_BINS}/p5_5	\
+		${DIR_BINS}/p5_6
 
 
 SRCS=$(wildcard *.c)
