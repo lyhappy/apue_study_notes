@@ -210,7 +210,7 @@ getc, putc | 8.45 | 0.29 | 10.33 | 114
 fgetc, fputc | 8.16 | 0.40 | 10.18 | 114
 single byte time from Figure 3.6 | 134.61 | 249.94 | 394.95
 
-Direct I/O
+Direct I/O (Binary I/O)
 ---
 
 ```c
@@ -222,5 +222,166 @@ size_t fwrite(const void *restrict ptr, size_t size, size_t nobj,
 		//	Both return: number of objects read or written
 ```
 
+在通过网络互联的异构系统中，二进制I/O操作的文件会有兼容性问题。
 
+定位流
+---
+
+```c
+#include <stdio.h> 
+long ftell(FILE *fp);
+		//	Returns: current file position indicator if OK, −1L on error 
+int fseek(FILE *fp, long offset, int whence);
+		//	Returns: 0 if OK, −1 on error
+void rewind(FILE *fp);
+```
+
+
+对于二进制文件，定位的单位为byte, whence 的取值和 lseek 相同， SEEK_SET, SEEK_CUR, SEEK_END<br>
+对于文本文件（非UNIX系统, 文本文件以特定格式存储）, whence 只能取值 SEEK_SET, offset只能取值0或ftell返回的值。<br>
+rewind 用于重定位到文件开始。
+
+```c
+#include <stdio.h> 
+off_t ftello(FILE *fp);
+		//	Returns: current file position indicator if OK, (off_t)−1 on error 
+int fseeko(FILE *fp, off_t offset, int whence);
+		//	Returns: 0 if OK, −1 on error
+```
+
+off_t 类型的长度可以大于32位。
+
+```c
+#include <stdio.h>
+int fgetpos(FILE *restrict fp, fpos_t *restrict pos); 
+int fsetpos(FILE *fp, const fpos_t *pos);
+		//	Both return: 0 if OK, nonzero on error
+```
+
+format I/O
+---
+
+```c
+#include <stdio.h>
+int printf(const char *restrict format, ...);
+int fprintf(FILE *restrict fp, const char *restrict format, ...); 
+int dprintf(int fd, const char *restrict format, ...);
+		//	All three return: number of characters output if OK, negative value if output error
+int sprintf(char *restrict buf, const char *restrict format, ...); 
+		//	Returns: number of characters stored in array if OK, negative value if encoding error
+int snprintf(char *restrict buf, size_t n, const char *restrict format, ...);
+		//	Returns: number of characters that would have been stored in array 
+		//	if buffer was large enough, negative value if encoding error
+```
+
+format specification:
+	`%[flags][fldwidth][precision][lenmodifier]convtype`
+
+Flag | Description
+--- | ---
+’ | (apostrophe) format integer with thousands grouping characters 
+- | left-justify the output in the field
++ | always display sign of a signed conversion
+ (space) | prefix by a space if no sign is generated
+# | convert using alternative form (include 0x prefix for hexadecimal format, for example) 
+0 | prefix with leading zeros instead of padding with spaces
+
+Length modifier | Description
+--- | --- 
+hh | signed or unsigned char
+h | signed or unsigned short
+l | signed or unsigned long or wide character 
+ll | signed or unsigned long long 
+j | intmax_t or uintmax_t
+z | size_t
+t | ptrdiff_t
+L | long double
+
+
+Conversion type | Description
+--- | ---
+d,i | signed decimal
+o | unsigned octal
+u | unsigned decimal
+x,X | unsigned hexadecimal
+f,F | double floating-point number
+e,E | double floating-point number in exponential format
+g,G | interpreted as f, F, e, or E, depending on value converted
+a,A | double floating-point number in hexadecimal exponential format 
+c | character (with l length modifier, wide character)
+s | string (with l length modifier, wide character string)
+p | pointer to a void
+n | pointer to a signed integer into which is written the number of characters written so far 
+% | a % character
+C | wide character (XSI option, equivalent to lc)
+S | wide character string (XSI option, equivalent to ls)
+
+```c
+#include <stdarg.h>
+#include <stdio.h>
+int vprintf(const char *restrict format, va_list arg);
+int vfprintf(FILE *restrict fp, const char *restrict format,
+		va_list arg);
+
+int vdprintf(int fd, const char *restrict format, va_list arg);
+		//	All three return: number of characters output if OK, negative value if output error
+int vsprintf(char *restrict buf, const char *restrict format, va_list arg);
+		//	Returns: number of characters stored in array if OK, negative value if encoding error
+
+int vsnprintf(char *restrict buf, size_t n,
+const char *restrict format, va_list arg);
+		//	Returns: number of characters that would have been stored in array 
+		//	if buffer was large enough, negative value if encoding error
+```
+
+```c
+#include <stdio.h>
+int scanf(const char *restrict format, ...);
+int fscanf(FILE *restrict fp, const char *restrict format, ...);
+int sscanf(const char *restrict buf, const char *restrict format, ...);
+		//	All three return: number of input items assigned, 
+		//	EOF if input error or end of file before any conversion
+```
+
+conversion specification:
+		`%[*][fldwidth][m][lenmodifier]convtype`
+
+Conversion type | Description
+--- | ---
+d | signed decimal, base 10
+i | signed decimal, base determined by format of input
+o | unsigned octal (input optionally signed)
+u | unsigned decimal, base 10 (input optionally signed)
+x,X | unsigned hexadecimal (input optionally signed)
+a,A,e,E,f,F,g,G | floating-point number
+c | character (with l length modifier, wide character)
+s | string (with l length modifier, wide character string)
+[ | matches a sequence of listed characters, ending with ]
+[ˆ | matches all characters except the ones listed, ending with ]
+p | pointer to a void
+n | pointer to a signed integer into which is written the number of characters read so far 
+% | a % character
+C | wide character (XSI option, equivalent to lc)
+S | wide character string (XSI option, equivalent to ls)
+
+```c
+#include <stdarg.h>
+#include <stdio.h>
+int vscanf(const char *restrict format, va_list arg);
+int vfscanf(FILE *restrict fp, const char *restrict format,
+		va_list arg);
+int vsscanf(const char *restrict buf, const char *restrict format, va_list arg);
+		//	All three return: number of input items assigned, EOF if input error or end of file before any conversion
+```
+
+实现细节
+---
+
+```c
+#include <stdio.h> 
+int fileno(FILE *fp);
+		//	Returns: the file descriptor associated with the stream
+```
+
+通过fileno可以获取文件流对应的文件描述符，当然这不是标准I/O库的函数。
 
