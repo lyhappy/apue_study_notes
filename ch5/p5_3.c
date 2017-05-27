@@ -1,3 +1,7 @@
+/*
+ * 程序清单5-3  Print buffering for various standard I/O streams
+ * 
+ */
 #include "apue.h"
 
 void    pr_stdio(const char *, FILE *);

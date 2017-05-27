@@ -385,3 +385,22 @@ int fileno(FILE *fp);
 
 通过fileno可以获取文件流对应的文件描述符，当然这不是标准I/O库的函数。
 
+[p5_3](p5_3)
+
+临时文件
+---
+
+```c
+#include <stdio.h>
+char *tmpnam(char *ptr);
+FILE *tmpfile(void);
+		//	Returns: pointer to unique pathname Returns: file pointer if OK, NULL on error
+```
+
+`tmpnam`生成一个与现有文件不重名且有效的路径字符串，每次调用产生的字符串不相同。最多可以调用TMP_MAX次，标准C规定至少25次，一般的实现远大于这个数。
+如果传入的参数ptr为NULL，则生成的文件名存储在一个静态数组，地址以返回值的形式给出，且后续的调用会覆盖静态数组中的值，所以需要及时取出其中的字符串。
+
+`tmpfile`会生成一个临时文件，并在关闭文件或进程退出时自动删除。
+
+
+
