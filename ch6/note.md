@@ -167,6 +167,7 @@ group information | /etc/group | /etc/group | Directory Services | /etc/group
 Similar routines for accessing system data files
 
 Description | Data file | Header | Structure | Additional keyed lookup functions
+--- | --- | --- | --- | ---
 passwords | /etc/passwd | <pwd.h> | passwd | getpwnam, getpwuid 
 groups | /etc/group | <grp.h> | group | getgrnam, getgrgid 
 shadow | /etc/shadow | <shadow.h> | spwd | getspnam
@@ -271,7 +272,7 @@ struct tm {      /* a broken-down time */
      int  tm_isdst; /* daylight saving time flag: <0, 0, >0 */
 };
 ```
-[image](images/time.png)
+![image](images/time.png)
 
 ```c
 #include <time.h>
