@@ -165,8 +165,10 @@ void longjmp(jmp_buf env, int val);
 >$ gcc testjmp.c compile without any optimization<br>
 >$ ./a.out<br>
 >in f1():<br>
->globval = 95, autoval = 96, regival = 97, volaval = 98, statval = 99 after longjmp:<br>
->globval = 95, autoval = 96, regival = 97, volaval = 98, statval = 99 $ gcc -O testjmp.c compile with full optimization<br>
+>globval = 95, autoval = 96, regival = 97, volaval = 98, statval = 99 <br>
+>after longjmp:<br>
+>globval = 95, autoval = 96, regival = 97, volaval = 98, statval = 99 <br>
+>$ gcc -O testjmp.c compile with full optimization<br>
 >$ ./a.out<br>
 >in f1():<br>
 >globval = 95, autoval = 96, regival = 97, volaval = 98, statval = 99<br>
