@@ -225,18 +225,3 @@ RLIMIT_STACK | 栈空间最大字节数
 RLIMIT_SWAP | 交换空间的最大字节数
 RLIMIT_VMEM | 同 RLIMIT_AS
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
