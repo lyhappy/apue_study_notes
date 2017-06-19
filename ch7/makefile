@@ -5,7 +5,8 @@ PROGS = ${DIR_BINS}/p7_2		\
 		${DIR_BINS}/p7_3		\
 		${DIR_BINS}/p7_5		\
 		${DIR_BINS}/p7_6		\
-		${DIR_BINS}/p7_6_O
+		${DIR_BINS}/p7_6_O		\
+		${DIR_BINS}/p7_8
 
 
 SRCS=$(wildcard *.c)

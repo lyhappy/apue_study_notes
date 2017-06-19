@@ -176,12 +176,54 @@ void longjmp(jmp_buf env, int val);
 >globval = 95, autoval = 2, regival = 3, volaval = 98, statval = 99<br>
 
 
+将自动变量的地址（栈空间地址）传递给其他函数使用，是极其容易出错的，栈空间上的变量在函数退出时，会被自动清空，如果之后其他函数还在使用那片空间，当然会出错。
 
+[p7_7.c](p7_7.c)
 
+getrlimit 和 setrlimit
+---
 
+```c
+#include <sys/resource.h>
+int getrlimit(int resource, struct rlimit *rlptr);
+int setrlimit(int resource, const struct rlimit *rlptr);
+		//	Both return: 0 if OK, −1 on error
+```
 
+这组函数用于查询和修改进程的资源限制
 
+```c
+struct rlimit {
+	rlim_t  rlim_cur;  /* soft limit: current limit */
+	rlim_t  rlim_max;  /* hard limit: maximum value for rlim_cur */
+};
+```
 
+Three rules govern the changing of the resource limits.<br>
+1. A process can change its soft limit to a value less than or equal to its hard limit.<br>
+2. A process can lower its hard limit to a value greater than or equal to its soft limit. This lowering of the hard limit is irreversible for normal users.<br>
+3. Only a superuser process can raise a hard limit.<br>
+
+Limit | notes
+--- | ---
+RLIMIT_AS |	进程可用存储区最大总长度
+RLIMIT_CORE | core文件的最大尺寸
+RLIMIT_CPU | CPU时间的最大量值
+RLIMIT_DATA | 数据段的最大字节长度
+RLIMIT_FSIZE | 可创建的文件的最大字节长度
+RLIMIT_LOCKS | 一个进程可持有的文件锁的最大数
+RLIMIT_MEMLOCK | 一个进程能够锁定在存储器中的最大字节数
+RLIMIT_MSGQUEUE | 一个进程可分配的POSIX消息队里最大空间
+RLIMIT_NICE | 一个进程优先级可调的极限值
+RLIMIT_NOFILE | 进程可打开的最大文件数
+RLIMIT_NPROC | 进程可创建的最大子进程数
+RLIMIT_NPTS | 进程同一时刻可打开的最大伪终端数
+RLIMIT_RSS | 最大驻内存集的字节数
+RLIMIT_SBSIZE | 单一用户任意时刻可消费的最大套接字缓冲区
+RLIMIT_SIGPENDING | 进程可排队的最大信号数
+RLIMIT_STACK | 栈空间最大字节数
+RLIMIT_SWAP | 交换空间的最大字节数
+RLIMIT_VMEM | 同 RLIMIT_AS
 
 
 
