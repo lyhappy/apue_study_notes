@@ -162,16 +162,16 @@ void longjmp(jmp_buf env, int val);
 [p7_6.c](p7_6.c)
 
 对于例子p7_6，编译时是否开启优化，会有不同的执行结果。
->$ gcc testjmp.c compile without any optimization
->$ ./a.out
->in f1():
->globval = 95, autoval = 96, regival = 97, volaval = 98, statval = 99 after longjmp:
->globval = 95, autoval = 96, regival = 97, volaval = 98, statval = 99 $ gcc -O testjmp.c compile with full optimization
->$ ./a.out
->in f1():
->globval = 95, autoval = 96, regival = 97, volaval = 98, statval = 99
->after longjmp:
->globval = 95, autoval = 2, regival = 3, volaval = 98, statval = 99
+>$ gcc testjmp.c compile without any optimization<br>
+>$ ./a.out<br>
+>in f1():<br>
+>globval = 95, autoval = 96, regival = 97, volaval = 98, statval = 99 after longjmp:<br>
+>globval = 95, autoval = 96, regival = 97, volaval = 98, statval = 99 $ gcc -O testjmp.c compile with full optimization<br>
+>$ ./a.out<br>
+>in f1():<br>
+>globval = 95, autoval = 96, regival = 97, volaval = 98, statval = 99<br>
+>after longjmp:<br>
+>globval = 95, autoval = 2, regival = 3, volaval = 98, statval = 99<br>
 
 
 
