@@ -281,10 +281,10 @@ format specification:
 Flag | Description
 --- | ---
 ’ | (apostrophe) format integer with thousands grouping characters 
-- | left-justify the output in the field
-+ | always display sign of a signed conversion
- (space) | prefix by a space if no sign is generated
-# | convert using alternative form (include 0x prefix for hexadecimal format, for example) 
+`-` | left-justify the output in the field
+`+` | always display sign of a signed conversion
+`(space)` | prefix by a space if no sign is generated
+`#` | convert using alternative form (include 0x prefix for hexadecimal format, for example) 
 0 | prefix with leading zeros instead of padding with spaces
 
 Length modifier | Description

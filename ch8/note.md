@@ -124,9 +124,7 @@ POSIX.1规定终止状态用定义在`<sys/wait.h>`中的宏来查看.
 
 Macro	| Description
 --- | ---
-WIFEXITED(status) | True if status was returned for a child that terminated normally. In this case, we can execute<br>
-WEXITSTATUS(status)<br>
-to fetch the low-order 8 bits of the argument that the child passed to exit, `_exit,` or `_Exit`.
+WIFEXITED(status) | True if status was returned for a child that terminated normally. In this case, we can execute<br> WEXITSTATUS(status)<br> to fetch the low-order 8 bits of the argument that the child passed to exit, `_exit,` or `_Exit`.
 WIFSIGNALED(status) | True if status was returned for a child that terminated abnormally, by receipt of a signal that it didn’t catch. In this case, we can execute<br>
 WTERMSIG(status)<br>
 to fetch the signal number that caused the termination.<br>
