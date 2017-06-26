@@ -125,16 +125,134 @@ POSIX.1规定终止状态用定义在`<sys/wait.h>`中的宏来查看.
 Macro	| Description
 --- | ---
 WIFEXITED(status) | True if status was returned for a child that terminated normally. In this case, we can execute<br> WEXITSTATUS(status)<br> to fetch the low-order 8 bits of the argument that the child passed to exit, `_exit,` or `_Exit`.
-WIFSIGNALED(status) | True if status was returned for a child that terminated abnormally, by receipt of a signal that it didn’t catch. In this case, we can execute<br>
-WTERMSIG(status)<br>
-to fetch the signal number that caused the termination.<br>
-Additionally, some implementations (but not the Single UNIX Specification) define the macro
-WCOREDUMP(status) | that returns true if a core file of the terminated process was generated.<br>
-WIFSTOPPED(status)<br>
-True if status was returned for a child that is currently stopped. In this case, we can execute
-WSTOPSIG(status) | to fetch the signal number that caused the child to stop.<br>
-WIFCONTINUED(status)<br>
-True if status was returned for a child that has been continued after a job control stop (XSI option; waitpid only).
+WIFSIGNALED(status) | True if status was returned for a child that terminated abnormally, by receipt of a signal that it didn’t catch. In this case, we can execute<br> WTERMSIG(status)<br> to fetch the signal number that caused the termination.<br> Additionally, some implementations (but not the Single UNIX Specification) define the macro
+WCOREDUMP(status) | that returns true if a core file of the terminated process was generated.<br> WIFSTOPPED(status)<br> True if status was returned for a child that is currently stopped. In this case, we can execute
+WSTOPSIG(status) | to fetch the signal number that caused the child to stop.<br> WIFCONTINUED(status)<br> True if status was returned for a child that has been continued after a job control stop (XSI option; waitpid only).
 
+[p8_3.c](p8_3.c)
+[p8_4.c](p8_4.c)
+
+
+waitpid函数中pid参数的意义：
+* `pid == -1`		等待任一子进程，就这一方面而言，waitpid 和 wait是等效的
+* `pid > 0`			等待进程ID等于pid的子进程
+* `pid == 0`		等待进程组ID等于调用者进程的组ID。
+* `pid < 0`			等待进程组ID等于pid绝对值的任意子进程。
+
+options参数的取值可以是0 或 以下值的“或”运算组合
+
+Constant | Description
+--- | ---
+WCONTINUED | If the implementation supports job control, the status of any child specified by pid that has been continued after being stopped, but whose status has not yet been reported, is returned (XSI option).
+WNOHANG | The waitpid function will not block if a child specified by pid is not immediately available. In this case, the return value is 0.
+WUNTRACED | If the implementation supports job control, the status of any child specified by pid that has stopped, and whose status has not been reported since it has stopped, is returned. The WIFSTOPPED macro determines whether the return value corresponds to a stopped child process.
+
+waitid
+---
+
+```c
+#include <sys/wait.h>
+int waitid(idtype_t idtype, id_t id, siginfo_t *infop, int options);
+		//	Returns: 0 if OK, −1 on error
+```
+
+这是XSI扩展中定义的函数。功能与waitpid类似，但更灵活。
+
+idtype的类型：
+
+Constant | Description
+--- | ---
+P_PID | Wait for a particular process: id contains the process ID of the child to wait for.
+P_PGID | Wait for any child process in a particular process group: id contains the process group ID of the children to wait for.
+P_ALL | Wait for any child process: id is ignored.
+
+
+optioins的取值可以是以下宏的按位或运算结果。
+
+Constant | Description
+--- | ---
+WCONTINUED | Wait for a process that has previously stopped and has been continued, and whose status has not yet been reported.
+WEXITED | Wait for processes that have exited.
+WNOHANG | Return immediately instead of blocking if there is no child exit status available.
+WNOWAIT | Don’t destroy the child exit status. The child’s exit status can be retrieved by a subsequent call to wait, waitid, or waitpid.
+WSTOPPED | Wait for a process that has stopped and whose status has not yet been reported.
+
+wait3 wait4
+---
+
+```c
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+
+pid_t wait3(int *statloc, int options, struct rusage *rusage);
+pid_t wait4(pid_t pid, int *statloc, int options, struct rusage *rusage); 
+		//	Both return: process ID if OK, 0, or −1 on error
+```
+
+参数rusage用于返回终止进程和其所有子进程的资源使用情况。资源统计信息包括，用户CPU时间总量，系统CPU时间总量，页面错误次数，接受到的信号次数。
+
+竞争条件
+---
+
+当多个进程企图对共享数据进行操作时，而最后的结果又取决于进程的执行顺序，则认为发生了**竞争条件**(race condition)。
+
+面对竞争条件，需要一定的同步机制。
+
+[p_6.c](p_6.c)
+
+**exec函数**
+---
+
+当进程调用exec函数时，该进程执行的程序将完全替换成新程序，而新程序则从main函数开始执行。因为exec并不创建新进程，所以进程ID不会发生变化。
+exec函数只是用一个新程序替换了当前进程的正文，数据，堆和栈。
+
+```c
+#include <unistd.h>
+int execl(const char *pathname, const char *arg0, ... /* (char *)0 */ );
+int execv(const char *pathname, char *const argv[]);
+int execle(const char *pathname, const char *arg0, ... /* (char *)0, char *const envp[] */ );
+int execve(const char *pathname, char *const argv[], char *const envp[]); 
+int execlp(const char *filename, const char *arg0, ... /* (char *)0 */ ); 
+int execvp(const char *filename, char *const argv[]);
+int fexecve(int fd, char *const argv[], char *const envp[]);
+		//	All seven return: −1 on error, no return on success
+```
+
+以上函数的*第一个*不同点是，前四个函数是以pathname做参数，接下来两个函数是以filename做参数，最后一个函数是以文件描述符做参数。
+
+对于filename参数：
+* 如果其中包含`/`，则将其视为pathname，与前两个函数一致。
+* 否则，将从环境变量PATH中搜索filename表示的可执行文件。
+
+环境变量PATH的示例：
+`PATH=/bin:/usr/bin:/usr/local/bin/:.`
+
+*注意*：将当前目录`.`放入环境变量PATH中，尤其是考前的位置，是有安全风险的。利用这一点，攻击者可以在某个目录里防止命名与常用命令相同（如`ls`）的恶意脚本，导致普通用户再执行常用命令时，错误的执行了恶意脚本。
+
+调用`execlp`和`execvp`时，如果找到的文件不是由链接器生成的可执行二进制文件，则会假设找到的是shell脚本，并调用`/bin/sh`去解析执行找到的文件。
+
+使用`fexecve`函数，可以精确的判断要执行的文件，因为必须要先调用open函数获取所指定文件的描述符，这个过程中同时也可以执行对文件权限的检查，同时也可以避免利用`IFS`攻击(修改shell默认的命令行分隔符为`/`)执行与路径名相同的恶意脚本。
+
+以上函数的*第二个*不同点是参数的传递方式:
+
+* 函数命名中包含字母l的，是以参数列表的形式将参数传递给新程序。其特点是函数参数个数不定。
+* 函数命名中包含字母v的，是以数组的形式将参数传递给新程序。
+
+*最后一个*不同点是向新程序传递环境表，
+* 以e结尾的三个函数，使用数组向新程序传递环境变量。
+* 其他四个函数，使用全局变量environ向新程序传递环境变量。
+
+每个系统对参数表和环境表的长度都有限制，这种限制由ARG_MAX给出，POSIX.1系统要求至少4096个字节。
+
+执行exec后，**进程ID**不会发生变化，同样不变的还有，父进程ID，实际用户ID，实际组ID，附加组ID，进程组ID，会话ID，控制终端，闹钟尚余留的时间，当前工作目录，根目录，文件模式创建屏蔽字，文件锁，进程信号屏蔽，未处理信号，资源限制，tms_utime, tms_stime, tms_cutime, and tms_cstime
+
+exec执行后，有效用户ID是否改变，取决于程序文件的 set-user-ID 和 set-group-ID
+
+这七个函数的关系如下图：
+![relationship_of_the_seven_exec.png](relationship_of_the_seven_exec.png)
+
+[p8_7.c](p8_7.c)
 
 

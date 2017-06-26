@@ -20,6 +20,7 @@ int main(void) {
 		var++;
 		printf("child pid = %ld, glob = %d, var = %d\n", (long)getpid(), globvar, var);
 		execv("test", NULL);
+		printf("child pid = %ld, glob = %d, var = %d\n", (long)getpid(), globvar, var);
 		_exit(0);	/* child terminates */
 	}
 
