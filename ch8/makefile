@@ -8,7 +8,10 @@ PROGS = ${DIR_BINS}/p8_1		\
 		${DIR_BINS}/p8_6		\
 		${DIR_BINS}/p8_7		\
 		${DIR_BINS}/p8_8		\
-		echoall
+		${DIR_BINS}/p8_9		\
+		${DIR_BINS}/p8_12		\
+		echoall		\
+		echoarg
 
 
 SRCS=$(wildcard *.c)
@@ -26,10 +29,12 @@ all: ${PROGS}
 ${DIR_OBJS}/%.o: %.c
 	${COMPILE.c} -o $@ $<
 
-${DIR_BINS}/%: ${DIR_OBJS}/%.o error.o	pathalloc.o ${DIR_OBJS}/p8_3.o
+${DIR_BINS}/%: ${DIR_OBJS}/%.o error.o	pathalloc.o ${DIR_OBJS}/p8_3.o ${DIR_OBJS}/p8_11.o
 	${LINK.c} -o $@ $^
 
 echoall:${DIR_BINS}/p8_8 
 	mv ${DIR_BINS}/p8_8 ${DIR_BINS}/echoall
+echoarg:${DIR_BINS}/echoall
+	cp ${DIR_BINS}/echoall ${DIR_BINS}/echoarg
 
 include ../makefile

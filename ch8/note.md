@@ -255,4 +255,94 @@ exec执行后，有效用户ID是否改变，取决于程序文件的 set-user-I
 
 [p8_7.c](p8_7.c)
 
+更改用户ID和组ID
+---
+
+UNIX系统使用最小特权模型来保障系统安全，通常应用程序应当只具有完成给定任务所需的最小权限。当应用需要提升特权或者访问本无权限的资源时，可以通过修改修改用户ID和组ID完成提权。
+
+```c
+#include <unistd.h> 
+int setuid(uid_t uid); 
+int setgid(gid_t gid);
+		//	Both return: 0 if OK, −1 on error
+```
+
+可以通过以上函数来修改用户ID和组ID，当然，提权是有严格的条件限制的(以下针对UID)：
+
+* 如果应用程序具有超级用户权限，setuid会修改real user ID(ruid), effective user ID(euid), and saved set-user-ID(suid) 为uid；
+* 如果应用程序没有超级用户权限，但是uid等于ruid 或 suid, setuid 会修改 euid 为 uid, 其他两个uid不变；
+* 如果以上两个条件都不满足，errno 将被设置为EPERM，并返回-1
+
+以上第二条的实际意义是允许进程的euid在 ruid 和 suid 之间切换，ruid 是启动进程的用户ID, suid 是启动进程时 euid 的副本，euid 是应用程序文件的所有者ID，当所有者ID与启动进程的用户ID不一致时，需要文件设置set-user-ID位
+
+关于内核所维护的三个uid，还需知道：
+
+* 只有超级用户才可以更改real user ID。通常，ruid是在用户登录时，由login程序设置，而且永远不会改变。login是一个超级用户进程，其调用setid，会同时设置三个uid
+* 仅当程序文件设置了 set-user-ID 位，exec函数才会设置进程的euid，如果没有设置set-user-ID 位，则exec不会修改euid，而是维持其原值。任何时候可以调用setuid来将euid设置为ruid或suid，但不能设置为其他任意值。
+* suid是由exec复制euid得来，如果程序文件设置了set-user-ID位，则exec设置进程euid为文件的所有者ID，同时，复制euid的副本到suid。
+
+suid仅仅是启动时edui的一个副本，因为后续程序可能调用setuid去修改euid的值为ruid，或者恢复euid原来的值，所以suid仅是一个备份启动时的euid的功能，也所以系统没有提供函数去获取suid的当前值。
+
+#### setreuid and setregid Functions
+
+```c
+#include <unistd.h>
+int setreuid(uid_t ruid, uid_t euid); 
+int setregid(gid_t rgid, gid_t egid);
+		//	Both return: 0 if OK, −1 on error
+```
+
+历史上，BSD提供以上函数来交换ruid和euid的值，如果不需要改变那个uid，可以将其对应的参数设置为-1
+
+> The rule is simple: an unprivileged user can always swap between the real user ID and the effective user ID. 
+> This allows a set-user-ID program to swap to the user’s normal permissions and swap back again later for set-user-ID operations. 
+
+#### seteuid and setegid Functions
+
+```c
+#include <unistd.h> 
+int seteuid(uid_t uid); 
+int setegid(gid_t gid);
+		//	Both return: 0 if OK, −1 on error
+```
+
+这对函数和setuid, setgid类似，但是只修改euid和egid，
+
+> An unprivileged user can set its effective user ID to either its real user ID or its saved set-user-ID. 
+> For a privileged user, only the effective user ID is set to uid.
+
+![img](images/various_user_ids.png)
+
+所有对group ID的函数与对user ID的函数的功能类似。
+
+解释器文件
+---
+
+interpreter files, These files are text files that begin with a line of the form
+`#! pathname [ optional-argument ]`
+
+pathname通常是绝对路径，不对其使用PATH进行路径搜索。
+
+对于解释器文件的识别，是由内核执行系统调用exec完成的。真正被内核执行的文件不是该解释器文件，而是由pathname指定的可执行文件(interpreter)。
+
+一般系统会限制解释器文件的第一行的长度。
+
+[p8_10](p8_10.wak)
+
+system函数
+---
+
+```c
+#include <stdlib.h>
+int system(const char *cmdstring);
+		//	Returns: (see below)
+```
+
+如果cmdstring为NULL，则仅当命令处理程序可用时，system返回非0值，这一特征可用于检测系统是否支持system函数。
+
+system函数会调用fork, exec, waitpid三个函数，返回值有三种类型：
+* If either the `fork` fails or `waitpid` returns an error other than EINTR, system returns −1 with `errno` set to indicate the error.
+* If the `exec` fails, implying that the shell can’t be executed, the return value is as if the shell had executed `exit`(127).
+* Otherwise, all three functions—`fork`, `exec`, and `waitpid`—succeed, and the return value from system is the termination `status` of the shell, in the format specified for `waitpid`.
+
 
