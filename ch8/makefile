@@ -12,6 +12,8 @@ PROGS = ${DIR_BINS}/p8_1		\
 		${DIR_BINS}/p8_12		\
 		${DIR_BINS}/p8_13		\
 		${DIR_BINS}/p8_14		\
+		${DIR_BINS}/p8_15		\
+		${DIR_BINS}/p8_16		\
 		echoall		\
 		echoarg		\
 		tsys		\

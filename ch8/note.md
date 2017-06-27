@@ -349,5 +349,46 @@ make在编译结束后，会自动删除自认为的中间文件（intermediate 
 
 #### Set-User-ID
 
+在以前的系统中，system调用会将父进程的特权传递给子进程，这会造成安全问题，新版系统基本都已拒绝这种做法。
+> The system function should never be used from a set-user-ID or a set-group-ID program.
+
+[p8_13.c](p8_13.c)<br>
+[p8_14.c](p8_14.c)
+
+进程会计
+---
+
+每当进程结束时，内核就写一个会计记录，典型的会计记录包含总量较小的二进制数据。由于没有统一的标准，各系统对该功能的实现有区别。
+
+`acct`函数用于启动和禁止进程会计。系统命令accton是基于该函数实现的。
+
+会计记录的数据结构定义在<sys/acct.h>中
+
+```c
+typedef  u_short comp_t;  /* 3-bit base 8 exponent; 13-bit fraction */
+struct acct {
+	char   ac_flag; /* flag (see Figure 8.26) */
+	char   ac_stat; /* termination status (signal & core flag only) */
+	/* (Solaris only) */
+	uid_t  ac_uid; /* real user ID */
+	gid_t  ac_gid; /* real group ID */
+	dev_t  ac_tty; /* controlling terminal */
+	time_t ac_btime; /* starting calendar time */
+	comp_t ac_utime; /* user CPU time */
+	comp_t ac_stime; /* system CPU time */
+	comp_t ac_etime; /* elapsed time */
+	comp_t ac_mem; /* average memory usage */
+	comp_t ac_io; /* bytes transferred (by read and write) */
+	/* "blocks" on BSD systems */
+	comp_t ac_rw; /* blocks read or written */
+	/* (not present on BSD systems) */
+	char   ac_comm[8]; /* command name: [8] for Solaris, */
+					/* [10] for Mac OS X, [16] for FreeBSD, and */
+					/* [17] for Linux */
+};
+```
+
+内核会在进程表中保存进程的数据，在进程终止时，将会计记录写入会计文件(该文件通常是/var/account/acct)，所以会计文件中的记录顺序对应的是进程终止的顺序，而不是启动顺序。
+
 
 
