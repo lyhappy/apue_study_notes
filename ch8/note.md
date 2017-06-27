@@ -345,4 +345,9 @@ system函数会调用fork, exec, waitpid三个函数，返回值有三种类型�
 * If the `exec` fails, implying that the shell can’t be executed, the return value is as if the shell had executed `exit`(127).
 * Otherwise, all three functions—`fork`, `exec`, and `waitpid`—succeed, and the return value from system is the termination `status` of the shell, in the format specified for `waitpid`.
 
+make在编译结束后，会自动删除自认为的中间文件（intermediate files）[关于makefile](https://peter.bourgon.org/blog/2009/10/10/gnu-make-and-deleting-intermediate-files.html)
+
+#### Set-User-ID
+
+
 

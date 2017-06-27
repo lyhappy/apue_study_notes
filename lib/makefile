@@ -16,5 +16,7 @@ all: ${OBJS}
 
 ${DIR_OBJS}/%.o: %.c
 	${COMPILE.c} -o $@ $<
+	
+.PRECIOUS:${OBJS}
 
 include ../makefile

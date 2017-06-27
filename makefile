@@ -1,13 +1,15 @@
 
 CC=gcc
-COMPILE.c ?= $(CC) $(CFLAGS) $(CPPFLAGS) -c
+COMPILE.c ?= $(CC) $(CFLAGS) $(CPPFLAGS) -c -ansi
 LINK.c ?= $(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS)
 
 VPATH = include:obj:lib
 
 
-CFLAGS = -ansi -Wall 
-CFLAGSO = -ansi -Wall -O
+CFLAGS = -Wall 
+CFLAGSO = -Wall -O
+
+.INTERMEDIATE:${OBJS} obj/*
 
 clean:
-	-@rm obj/*.o ../obj/*.o ../bin/*
+	-@rm ../obj/*.o ../bin/*
