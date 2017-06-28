@@ -390,5 +390,82 @@ struct acct {
 
 内核会在进程表中保存进程的数据，在进程终止时，将会计记录写入会计文件(该文件通常是/var/account/acct)，所以会计文件中的记录顺序对应的是进程终止的顺序，而不是启动顺序。
 
+[p8_15.c](p8_15.c)<br>
+[p8_16.c](p8_16.c)
+
+用户标识
+---
+
+```c
+#include <unistd.h>
+char *getlogin(void);
+		//	Returns: pointer to string giving login name if OK, NULL on error
+```
+
+用于获取用户登录时的用户名。
+
+进程调度
+---
+
+A process could choose to run with lower priority by adjusting its nice value (thus a process could be ‘‘nice’’ and reduce its share of the CPU by adjusting its nice value). Only a privileged process was allowed to increase its scheduling priority.
+
+In the Single UNIX Specification, nice values range from 0 to (2*NZERO)−1, Lower nice values have higher scheduling priority.
+
+```c
+#include <unistd.h> 
+int nice(int incr);
+		//	Returns: new nice value − NZERO if OK, −1 on error
+```
+
+The incr argument is added to the nice value of the calling process. If incr is too large, the system silently reduces it to the maximum legal value. Similarly, if incr is too small, the system silently increases it to the minimum legal value.
+
+Because −1 is a legal successful return value, we need to clear errno before calling nice and check its value if nice returns −1.
+
+```c
+#include <sys/resource.h>
+int getpriority(int which, id_t who);
+		//	Returns: nice value between −NZERO and NZERO−1 if OK, −1 on error
+```
+
+getpriority 可以用于获取一个或者一组相关进程的nice值
+
+which 可取三个值：
+* `PRIO_PROCESS` to indicate a process, 
+* `PRIO_PGRP` to indicate a process group, 
+* `PRIO_USER` to indicate a user ID.
+
+who 取值为0时，如果which为PRIO_USER，则取调用进程的实际用户ID的nice值（？）否则表示取当前进程，进程组的nice值，(依据which的取值）。
+当which的值指向进程组时，返回的是优先级最高的进程的nice值。
+
+```c
+#include <sys/resource.h>
+int setpriority(int which, id_t who, int value);
+		//	Returns: 0 if OK, −1 on error
+```
+
+which 和 who 的取值如上。
+The value is added to NZERO and this becomes the new nice value.
+
+[p8_17.c](p8_17.c)
+
+进程时间
+---
+
+```c
+#include <sys/times.h>
+
+struct tms {
+	clock_t  tms_utime;  /* user CPU time */
+	clock_t  tms_stime;  /* system CPU time */
+	clock_t  tms_cutime; /* user CPU time, terminated children */
+	clock_t  tms_cstime; /* system CPU time, terminated children */
+};
+
+clock_t times(struct tms *buf);
+		//	Returns: elapsed wall clock time in clock ticks if OK, −1 on error
+```
+
+[p8_18.c](p8_18.c)
 
 
+		

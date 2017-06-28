@@ -14,6 +14,8 @@ PROGS = ${DIR_BINS}/p8_1		\
 		${DIR_BINS}/p8_14		\
 		${DIR_BINS}/p8_15		\
 		${DIR_BINS}/p8_16		\
+		${DIR_BINS}/p8_18		\
+		${DIR_BINS}/p8_17		\
 		echoall		\
 		echoarg		\
 		tsys		\
@@ -42,6 +44,8 @@ ${DIR_BINS}/%: ${DIR_OBJS}/%.o error.o
 ${DIR_BINS}/p8_4: ${DIR_OBJS}/p8_4.o ${DIR_OBJS}/p8_3.o error.o
 
 ${DIR_BINS}/p8_13: ${DIR_OBJS}/p8_13.o ${DIR_OBJS}/p8_3.o error.o
+
+${DIR_BINS}/p8_18: ${DIR_OBJS}/p8_18.o ${DIR_OBJS}/p8_3.o error.o
 
 ${DIR_BINS}/p8_12: ${DIR_OBJS}/p8_12.o ${DIR_OBJS}/p8_11.o ${DIR_OBJS}/p8_3.o ${DIR_OBJS}/error.o
 	${LINK.c} -o $@ $^
